@@ -2988,17 +2988,47 @@ const ALL_TAGS = [...new Set(WARRIORS.flatMap(w => w.tags))];
 // ====================================================
 // PortraitComponent
 // ====================================================
-// Wikimediaの直接URLをno-referrerで読み込む
+// Wikipedia REST API経由で画像を取得
+function useWikimediaImage(imageUrl) {
+  const [src, setSrc] = React.useState(null);
+
+  React.useEffect(() => {
+    if (!imageUrl) return;
+    if (imageUrl.startsWith('data:')) { setSrc(imageUrl); return; }
+
+    // upload.wikimedia.orgのURLからファイル名を取得
+    const m = imageUrl.match(/\/([^/]+\.(?:jpg|jpeg|png|gif|svg))(?:\/\d+px-[^/]+)?$/i);
+    if (!m) { setSrc(imageUrl); return; }
+
+    const filename = m[1].replace(/_/g, ' ');
+    // Wikipedia API で画像のthumbを取得
+    const apiUrl = `https://en.wikipedia.org/w/api.php?action=query&titles=File:${encodeURIComponent(filename)}&prop=imageinfo&iiprop=url&iiurlwidth=400&format=json&origin=*`;
+
+    fetch(apiUrl)
+      .then(r => r.json())
+      .then(data => {
+        const pages = data.query.pages;
+        const page = Object.values(pages)[0];
+        const thumburl = page?.imageinfo?.[0]?.thumburl;
+        if (thumburl) setSrc(thumburl);
+        else setSrc(imageUrl);
+      })
+      .catch(() => setSrc(imageUrl));
+  }, [imageUrl]);
+
+  return src;
+}
+
 function Portrait({ warrior, mode = "card" }) {
   const [imgError, setImgError] = React.useState(false);
+  const src = useWikimediaImage(warrior.imageUrl);
 
-  if (warrior.imageUrl && !imgError) {
+  if (src && !imgError) {
     return (
       <img
         className={mode === "card" ? "card-portrait" : "detail-portrait"}
-        src={warrior.imageUrl}
+        src={src}
         alt={warrior.name}
-        referrerPolicy="no-referrer"
         onError={() => setImgError(true)}
       />
     );
