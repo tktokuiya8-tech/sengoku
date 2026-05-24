@@ -2988,20 +2988,16 @@ const ALL_TAGS = [...new Set(WARRIORS.flatMap(w => w.tags))];
 // ====================================================
 // PortraitComponent
 // ====================================================
-// Special:FilePath 経由でWikimedia画像を表示
-function toFilePath(imageUrl) {
+// wsrv.nl プロキシ経由でWikimedia画像を表示
+function toProxyUrl(imageUrl) {
   if (!imageUrl) return null;
   if (imageUrl.startsWith('data:')) return imageUrl;
-  // upload.wikimedia.org URLからファイル名を抽出
-  const m = imageUrl.match(/\/([^/]+\.(?:jpg|jpeg|png|gif|svg))(?:\/\d+px-[^/]+)?$/i);
-  if (!m) return imageUrl;
-  const filename = m[1];
-  return 'https://commons.wikimedia.org/wiki/Special:FilePath/' + filename + '?width=400';
+  return 'https://wsrv.nl/?url=' + encodeURIComponent(imageUrl) + '&w=400&output=jpg';
 }
 
 function Portrait({ warrior, mode = "card" }) {
   const [imgError, setImgError] = React.useState(false);
-  const src = toFilePath(warrior.imageUrl);
+  const src = toProxyUrl(warrior.imageUrl);
 
   if (src && !imgError) {
     return (
