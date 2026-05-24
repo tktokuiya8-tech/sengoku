@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="referrer" content="no-referrer">
 <title>戦国武将図鑑</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
@@ -2987,14 +2988,17 @@ const ALL_TAGS = [...new Set(WARRIORS.flatMap(w => w.tags))];
 // ====================================================
 // PortraitComponent
 // ====================================================
+// Wikimediaの直接URLをno-referrerで読み込む
 function Portrait({ warrior, mode = "card" }) {
   const [imgError, setImgError] = React.useState(false);
+
   if (warrior.imageUrl && !imgError) {
     return (
       <img
         className={mode === "card" ? "card-portrait" : "detail-portrait"}
         src={warrior.imageUrl}
         alt={warrior.name}
+        referrerPolicy="no-referrer"
         onError={() => setImgError(true)}
       />
     );
